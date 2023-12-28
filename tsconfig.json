@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonJS",
+        "strict": true,
+        "outDir": "./dist",
+        "sourceMap": true,
+        "types": ["node", "express"],
+        "esModuleInterop": true
+    },
+
+    "include": ["**/*.ts", "index.ts", "/.tipos.ts"],
+
+    "exclude": ["node_modules"]
+}
