@@ -9,5 +9,6 @@ router.get('/:email', user_1.getUserByEmail); //Establecemos que vamos a recibir
 router.put('/:email', user_1.updateUser);
 router.delete('/:email', user_1.hardDeleteUser);
 router.put('/softDelete/:email', user_1.softDeleteUser);
+router.put('/restore/:email', user_1.restoreUser);
 exports.default = router;
 //# sourceMappingURL=users.js.map

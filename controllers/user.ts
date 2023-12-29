@@ -43,14 +43,26 @@ export const newUser =async (req:Request, res:Response) => {
 
 export const updateUser =async (req:Request, res:Response) => {
     
-    const { email } = req.params; //Desestructuro el email de los parametros de la Request
+    const { email } = req.params; //Desestructuro el email de los parametros de la 
+        
+    const  user   = await User.findOne({email: email}); //Primero busco al usuario con el email y devuelvo un mensaje si no lo encontró
+ 
+    if (!user) {
+        res.json({
+            message: "Usuario no encontrado"
+        });
+        return;
+    }
 
-    const { nombre, apellido, ...data} = req.body; //Desestructuro nombre y apellido del body Request
+    const { _id } = user; //Si el usuario existe desestructuro su id para buscarlo y actualizar los datos necesarios (excepto el estado)
 
-    const user = await User.findOneAndUpdate({email: email}, {nombre, apellido}); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
+    const {  estado, ...data } = req.body; //Desestructuro del body del request: el estado y el resto de los campos con el spread operator en data 
+    console.log(data);
+    
+    const updatedUser = await User.findByIdAndUpdate( _id,  data ); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
 
     res.json({
-        user
+        updatedUser
     })
 
 };
@@ -80,6 +92,32 @@ export const softDeleteUser =async (req:Request, res:Response) => {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
 
     const user = await User.findOneAndUpdate({email: email}, { estado: false }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
+
+    if (!user) {
+        res.json({
+            message: "Usuario no encontrado"
+        });
+        return;
+    }
+
+    res.json({
+        user
+    })
+
+};
+
+export const restoreUser =async (req:Request, res:Response) => {
+    
+    const { email } = req.params; 
+
+    const user = await User.findOneAndUpdate({email: email}, { estado: true }); 
+
+    if (!user) {
+        res.json({
+            message: "Usuario no encontrado"
+        });
+        return;
+    }
 
     res.json({
         user
