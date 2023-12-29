@@ -31,6 +31,6 @@ export class Server {
     }
 
     routes(): void {
-        this.app.use('/users', usersRoutes)
+        this.app.use('/users', usersRoutes)//Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
     }
 }

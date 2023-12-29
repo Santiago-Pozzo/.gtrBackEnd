@@ -38,7 +38,7 @@ class Server {
         console.log("Hola middelwares");
     }
     routes() {
-        this.app.use('/users', users_1.default);
+        this.app.use('/users', users_1.default); //Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
     }
 }
 exports.Server = Server;
