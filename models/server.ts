@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import { connectDB } from "../database/config";
 import usersRoutes from "../routes/users" //como yo exporté por default el router en users.ts, aca lo puedo traer con un nombre diferente (en el archivo user.ts se exportó como rutes, acá lo traigo con el alias usersRoutes)
+import productRoutes from "../routes/products"
 import { log } from "console";
 
 export class Server {
@@ -12,6 +13,7 @@ export class Server {
         this.conectionDB();
         this.middlewares();
         this.routes();
+        this.products();
     }
 
     listen(): void {
@@ -26,11 +28,14 @@ export class Server {
 
     middlewares(): void {
         this.app.use(express.json());//Este metodo hace que este disponible el body de la request
-        console.log("Hola middelwares");
         
     }
 
     routes(): void {
-        this.app.use('/users', usersRoutes)//Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
+        this.app.use('/users', usersRoutes);//Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
+    }
+
+    products():void {
+        this.app.use('/products', productRoutes);
     }
 }

@@ -36,13 +36,19 @@ exports.getUsers = getUsers;
 const getUserByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
     const user = yield user_1.default.findOne({ email: email }); //La constante user puede ser de la clase IUser o puede ser null. En el metodo findOne establezco como condición que el campo email sea igual al valor de email que desestructuramos de la req
+    if (!user) {
+        res.json({
+            msj: "No hay usuarios registrados con ese email"
+        });
+        return;
+    }
     res.json({
         user
     });
 });
 exports.getUserByEmail = getUserByEmail;
 const newUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userData = req.body; //obtengo los datos enviados a traves del body de la request
+    const userData = req.body; //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
     const user = new user_1.default(userData); // creo un usuario con el modelo de mongoose y los datos que vienen en el body de la req
     yield user.save();
     res.json({
@@ -56,13 +62,12 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const user = yield user_1.default.findOne({ email: email }); //Primero busco al usuario con el email y devuelvo un mensaje si no lo encontró
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
     const { _id } = user; //Si el usuario existe desestructuro su id para buscarlo y actualizar los datos necesarios (excepto el estado)
     const _a = req.body, { estado } = _a, data = __rest(_a, ["estado"]); //Desestructuro del body del request: el estado y el resto de los campos con el spread operator en data 
-    console.log(data);
     const updatedUser = yield user_1.default.findByIdAndUpdate(_id, data); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
     res.json({
         updatedUser
@@ -88,7 +93,7 @@ const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
@@ -102,11 +107,12 @@ const restoreUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true });
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
     res.json({
+        msj: "Se reestableció el usuario",
         user
     });
 });

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 
 import User, {IUser} from "../models/user";
-import { json } from "stream/consumers";
+
 
 export const getUsers =async (req:Request, res:Response) => {
     
@@ -21,6 +21,14 @@ export const getUserByEmail =async (req:Request, res:Response) => {
 
     const user:IUser | null = await User.findOne({email: email}); //La constante user puede ser de la clase IUser o puede ser null. En el metodo findOne establezco como condición que el campo email sea igual al valor de email que desestructuramos de la req
 
+    if(!user) {
+        res.json({
+            msj: "No hay usuarios registrados con ese email"
+        })
+
+        return
+    }
+
     res.json({
         user
     })
@@ -29,7 +37,7 @@ export const getUserByEmail =async (req:Request, res:Response) => {
 
 export const newUser =async (req:Request, res:Response) => {
 
-    const userData: IUser = req.body //obtengo los datos enviados a traves del body de la request
+    const userData: IUser = req.body //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
 
     const user = new User(userData)// creo un usuario con el modelo de mongoose y los datos que vienen en el body de la req
 
@@ -49,7 +57,7 @@ export const updateUser =async (req:Request, res:Response) => {
  
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
@@ -57,7 +65,6 @@ export const updateUser =async (req:Request, res:Response) => {
     const { _id } = user; //Si el usuario existe desestructuro su id para buscarlo y actualizar los datos necesarios (excepto el estado)
 
     const {  estado, ...data } = req.body; //Desestructuro del body del request: el estado y el resto de los campos con el spread operator en data 
-    console.log(data);
     
     const updatedUser = await User.findByIdAndUpdate( _id,  data ); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
 
@@ -95,7 +102,7 @@ export const softDeleteUser =async (req:Request, res:Response) => {
 
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
@@ -114,12 +121,13 @@ export const restoreUser =async (req:Request, res:Response) => {
 
     if (!user) {
         res.json({
-            message: "Usuario no encontrado"
+            msj: "Usuario no encontrado"
         });
         return;
     }
 
     res.json({
+        msj: "Se reestableció el usuario",
         user
     })
 
