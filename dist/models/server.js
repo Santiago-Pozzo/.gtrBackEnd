@@ -17,13 +17,13 @@ const express_1 = __importDefault(require("express"));
 const config_1 = require("../database/config");
 const users_1 = __importDefault(require("../routes/users")); //como yo exporté por default el router en users.ts, aca lo puedo traer con un nombre diferente (en el archivo user.ts se exportó como rutes, acá lo traigo con el alias usersRoutes)
 const products_1 = __importDefault(require("../routes/products"));
+const orders_1 = __importDefault(require("../routes/orders"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
         this.conectionDB();
         this.middlewares();
         this.routes();
-        this.products();
     }
     listen() {
         this.app.listen(8080, () => {
@@ -40,9 +40,8 @@ class Server {
     }
     routes() {
         this.app.use('/users', users_1.default); //Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
-    }
-    products() {
         this.app.use('/products', products_1.default);
+        this.app.use('/orders', orders_1.default);
     }
 }
 exports.Server = Server;

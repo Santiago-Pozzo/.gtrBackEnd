@@ -35,6 +35,13 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getUsers = getUsers;
 const getUserByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
+    // Verificar si el email cumple con el formato requerido
+    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
+    if (!isValidEmail) {
+        return res.status(400).json({
+            msj: "El formato del correo electrónico no es válido."
+        });
+    }
     const user = yield user_1.default.findOne({ email: email }); //La constante user puede ser de la clase IUser o puede ser null. En el metodo findOne establezco como condición que el campo email sea igual al valor de email que desestructuramos de la req
     if (!user) {
         res.json({
@@ -76,6 +83,13 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.updateUser = updateUser;
 const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params;
+    // Verificar si el email cumple con el formato requerido
+    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
+    if (!isValidEmail) {
+        return res.status(400).json({
+            msj: "El formato del correo electrónico no es válido."
+        });
+    }
     const user = yield user_1.default.findOneAndDelete({ email: email }); //Por mas que borre el usuario de la DB, cuando encuentra el usuario igualmente crea la const user con la info del usuario, por eso podemos usar el falsie en el if que sigue más abajo)
     if (!user) { //Si no hay usuario con ese mail envío un menasje de error 
         res.json({
@@ -90,6 +104,13 @@ const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.hardDeleteUser = hardDeleteUser;
 const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
+    // Verificar si el email cumple con el formato requerido
+    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
+    if (!isValidEmail) {
+        return res.status(400).json({
+            msj: "El formato del correo electrónico no es válido."
+        });
+    }
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
     if (!user) {
         res.json({
@@ -104,6 +125,13 @@ const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.softDeleteUser = softDeleteUser;
 const restoreUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params;
+    // Verificar si el email cumple con el formato requerido
+    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
+    if (!isValidEmail) {
+        return res.status(400).json({
+            msj: "El formato del correo electrónico no es válido."
+        });
+    }
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true });
     if (!user) {
         res.json({
