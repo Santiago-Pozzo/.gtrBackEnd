@@ -1,19 +1,19 @@
-import { Model, Schema, Types, model } from "mongoose";
+import { Model, Schema, Types, model, ObjectId } from "mongoose";
 
 import { IUser } from "./user";
 import { IProduct } from "./product";
 
 
 export interface IOrderItem  {
-    producto: Types.ObjectId | IProduct,   
+    producto: ObjectId | IProduct,   // producto puede ser del tipo ObjetId o puede ser un objeto de la clase IProduct
     precioAlComprar: number,
     cantidad: number
 };
 
 export interface IOrder {
     fecha: Date,
-    usuario: Types.ObjectId | IUser,    
-    items: IOrder[],
+    usuario: ObjectId | IUser,    
+    items: IOrderItem[],
     precioTotalAlComprar: number,
     estado: boolean,
 };
@@ -26,15 +26,15 @@ export const OrderSchema = new Schema<IOrder>({
     },
 
     usuario: {
-        type: Types.ObjectId,
-        ref: "User",
+        type: Schema.Types.ObjectId,
+        ref: "User", //Con esto hago referencia que usuario va a ser un documento de la colección Users (construida con el modelo User que es lo que aclaramos en esta línea entre comillas)
         required: true
     },
 
     items: [
         {
             producto: {
-                type: Types.ObjectId,
+                type: Schema.Types.ObjectId,
                 ref: "Product",
                 required: true
             },

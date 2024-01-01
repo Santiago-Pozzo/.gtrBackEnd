@@ -43,7 +43,7 @@ export const getUserByEmail = async (req:Request, res:Response) => {
 
 };
 
-export const newUser = async (req:Request, res:Response) => {
+export const newUser = async (req:Request, res:Response) => { //FALTA VALIDAR QUE NO EXISTA EL MAIL ANTES DE CREAR EL NUEVO USUARIO
 
     const userData: IUser = req.body //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
 
@@ -124,7 +124,7 @@ export const softDeleteUser = async (req:Request, res:Response) => {
           });
       }
 
-    const user = await User.findOneAndUpdate({email: email}, { estado: false }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
+    const user = await User.findOneAndUpdate({email: email}, { estado: false }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
 
     if (!user) {
         res.json({
@@ -152,7 +152,7 @@ export const restoreUser = async (req:Request, res:Response) => {
           });
       }
 
-    const user = await User.findOneAndUpdate({email: email}, { estado: true }); 
+    const user = await User.findOneAndUpdate({email: email}, { estado: true }, { new: true }); 
 
     if (!user) {
         res.json({

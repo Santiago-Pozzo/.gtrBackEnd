@@ -111,7 +111,7 @@ const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
             msj: "El formato del correo electrónico no es válido."
         });
     }
-    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
+    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
     if (!user) {
         res.json({
             msj: "Usuario no encontrado"
@@ -132,7 +132,7 @@ const restoreUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             msj: "El formato del correo electrónico no es válido."
         });
     }
-    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true });
+    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true }, { new: true });
     if (!user) {
         res.json({
             msj: "Usuario no encontrado"

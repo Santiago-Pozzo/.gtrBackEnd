@@ -99,7 +99,7 @@ const hardDeleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.hardDeleteProduct = hardDeleteProduct;
 const softDeleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: false });
+    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: false }, { new: true });
     if (!product) {
         res.json({
             msj: "Producto no encontrado"
@@ -114,7 +114,7 @@ const softDeleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.softDeleteProduct = softDeleteProduct;
 const restoreProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: true });
+    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: true }, { new: true });
     if (!product) {
         res.json({
             msj: "Producto no encontrado"

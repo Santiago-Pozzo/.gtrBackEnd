@@ -108,7 +108,7 @@ export const softDeleteProduct =async (req:Request, res:Response) => {
     
     const { id_producto } = req.params; 
 
-    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: false }); 
+    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: false }, { new: true }); 
     if (!product) {
         res.json({
             msj: "Producto no encontrado"
@@ -127,7 +127,7 @@ export const restoreProduct =async (req:Request, res:Response) => {
     
     const { id_producto } = req.params; 
 
-    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: true }); 
+    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: true }, { new: true }); 
 
     if (!product) {
         res.json({

@@ -10,14 +10,14 @@ exports.OrderSchema = new mongoose_1.Schema({
         default: Date.now
     },
     usuario: {
-        type: mongoose_1.Types.ObjectId,
-        ref: "User",
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "User", //Con esto hago referencia que usuario va a ser un documento de la colección Users (construida con el modelo User que es lo que aclaramos en esta línea entre comillas)
         required: true
     },
     items: [
         {
             producto: {
-                type: mongoose_1.Types.ObjectId,
+                type: mongoose_1.Schema.Types.ObjectId,
                 ref: "Product",
                 required: true
             },
