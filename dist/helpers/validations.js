@@ -12,21 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectDB = void 0;
-const mongoose_1 = __importDefault(require("mongoose"));
-const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const DataBaseURL = process.env.DB_URL;
-        if (!DataBaseURL) {
-            throw new Error("Error al iniciar base de datos. La URL no está correctamente definida en .env");
-        }
-        yield mongoose_1.default.connect(DataBaseURL);
-        console.log("Base de datos online");
+exports.isRegisteredEmail = void 0;
+const user_1 = __importDefault(require("../models/user"));
+const mailer_1 = require("../mailer/mailer");
+const isRegisteredEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const registeredUser = yield user_1.default.findOne({ email });
+    if (registeredUser && registeredUser.verificado) {
+        throw new Error(`El email: ${email} ya está registrado y verificado`);
     }
-    catch (error) {
-        console.log(error);
-        throw new Error("Error al iniciar base de datos");
+    if (registeredUser && !registeredUser.verificado) {
+        yield (0, mailer_1.sendMail)(email, registeredUser.codigo);
+        throw new Error(`El email: ${email} ya está registrado. Se envió el nuevamente código de verificación al correo`);
     }
 });
-exports.connectDB = connectDB;
-//# sourceMappingURL=config.js.map
+exports.isRegisteredEmail = isRegisteredEmail;
+//# sourceMappingURL=validations.js.map

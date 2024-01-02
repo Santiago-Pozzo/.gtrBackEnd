@@ -2,8 +2,13 @@ import mongoose from "mongoose";
 
 export const connectDB =async ():Promise<void> => {
     try{
+        const DataBaseURL = process.env.DB_URL;
 
-        await mongoose.connect("mongodb+srv://santiagopozzo:7yrCEEoEbY0kCtCd@integradordb.nbaaepj.mongodb.net/")
+            if(!DataBaseURL){
+                throw new Error("Error al iniciar base de datos. La URL no está correctamente definida en .env")
+            }
+
+        await mongoose.connect(DataBaseURL)
         console.log("Base de datos online");
         
     }catch(error){

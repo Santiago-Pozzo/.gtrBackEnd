@@ -14,20 +14,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const config_1 = require("../database/config");
 const users_1 = __importDefault(require("../routes/users")); //como yo exporté por default el router en users.ts, aca lo puedo traer con un nombre diferente (en el archivo user.ts se exportó como rutes, acá lo traigo con el alias usersRoutes)
 const products_1 = __importDefault(require("../routes/products"));
 const orders_1 = __importDefault(require("../routes/orders"));
+const auths_1 = __importDefault(require("../routes/auths"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
+        this.port = process.env.PORT;
         this.conectionDB();
         this.middlewares();
         this.routes();
     }
     listen() {
-        this.app.listen(8080, () => {
-            console.log("Corriendo en el puerto 8080");
+        this.app.listen(this.port, () => {
+            console.log(`Corriendo en el puerto ${this.port}`);
         });
     }
     conectionDB() {
@@ -36,12 +39,14 @@ class Server {
         });
     }
     middlewares() {
-        this.app.use(express_1.default.json()); //Este metodo hace que este disponible el body de la request
+        this.app.use((0, cors_1.default)()); //Esta libreria permite y gestiona solicitudes que vengan de ina url distinta a la que esta instancia nuestra API
+        this.app.use(express_1.default.json()); //Este metodo hace que este disponible el body en las .body
     }
     routes() {
         this.app.use('/users', users_1.default); //Con esta instrucción cuando se acceda a el path /users se podra acceder a los metodos (solicitudes HTTP en este caso) definidos en ../routes/users.ts
         this.app.use('/products', products_1.default);
         this.app.use('/orders', orders_1.default);
+        this.app.use('/auth', auths_1.default);
     }
 }
 exports.Server = Server;

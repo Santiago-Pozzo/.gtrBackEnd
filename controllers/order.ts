@@ -15,6 +15,7 @@ const transformArray = async (productosArray: any[]) => {
             const productoEnDB = await Product.findOne({ id_producto: producto.id_producto });
     
             if (productoEnDB) {                
+
                 return {
                     producto: productoEnDB,
                     precioAlComprar: producto.precioAlComprar,
@@ -57,11 +58,11 @@ export const newOrder = async (req:Request, res:Response) => {
         };
 
 
-    const order = new Order({
+    const order = await new Order({
        usuario: user,
        items: items,
        precioTotalAlComprar 
-    })
+    }).populate("usuario");
 
     try {
 

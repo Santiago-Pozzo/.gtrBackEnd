@@ -57,11 +57,11 @@ const newOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     ;
-    const order = new order_1.default({
+    const order = yield new order_1.default({
         usuario: user,
         items: items,
         precioTotalAlComprar
-    });
+    }).populate("usuario");
     try {
         yield order.save();
         return res.json({
