@@ -1,5 +1,5 @@
 import { Model, Schema, model, Document } from "mongoose";
-import { ROLES } from "../helpers/contants";
+import { ROLES } from "../helpers/constants";
 
 export interface IUser extends Document {
     nombre: string,

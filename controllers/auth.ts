@@ -2,10 +2,10 @@ import { Request, Response } from "express";
 import User, { IUser } from "../models/user";
 import bcryptjs, { hashSync } from "bcryptjs";
 import randomstring from "randomstring";
-import { ROLES } from "../helpers/contants";
+import { ROLES } from "../helpers/constants";
 import { sendMail } from "../mailer/mailer";
 import { generateJWT } from "../helpers/generateJWT";
-import { log } from "console";
+
 
 export const register = async ( req:Request, res: Response ) => {
     const {nombre, apellido, email, contraseña, rol }:IUser = req.body;
@@ -82,13 +82,57 @@ export const login = async ( req:Request, res: Response ) => {
 
         const token = await generateJWT( user.id );
         
-        return res.json({
+        return res.status(200).json({
             msj: "Inicio de sesión exitoso",
             user,
             token
         })
 
     } catch(error){
+
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor",
+            error
+        })
+
+    }
+}
+
+export const verifyUser = async ( req:Request, res: Response ) => {
+
+    const { email, codigo } = req.body;
+
+    try {
+
+        const user = await User.findOne({ email });
+
+            if( !user ){
+                return res.status(400).json({
+                    msj: "No se encontró el email en la base de datos"
+                })
+            };
+
+            if( user.verificado ) {
+                return res.status(400).json({
+                    msj: "El usuario ya se encuentra verificado"
+                })
+            };
+            
+            if ( codigo !== user.codigo ) {
+                return res.status(400).json({
+                    msj: "El código es incorrecto"
+                })                
+            };
+
+        const actualizedUser = await User.findOneAndUpdate({ email }, { verificado: true }, { new: true });
+
+        return res.status(200).json({
+            msj: "Usuario verificado exitosamente",
+            actualizedUser
+        })
+
+    } catch(error) {
 
         console.error(error);
         return res.status(500).json({

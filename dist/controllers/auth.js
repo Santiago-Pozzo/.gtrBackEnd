@@ -12,11 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.register = void 0;
+exports.verifyUser = exports.login = exports.register = void 0;
 const user_1 = __importDefault(require("../models/user"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const randomstring_1 = __importDefault(require("randomstring"));
-const contants_1 = require("../helpers/contants");
+const constants_1 = require("../helpers/constants");
 const mailer_1 = require("../mailer/mailer");
 const generateJWT_1 = require("../helpers/generateJWT");
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -28,9 +28,9 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const encryptedPass = bcryptjs_1.default.hashSync(contraseña, salt);
         //Usuario administrador
         const adminKey = req.headers["admin-key"]; //Accedo a los headers de la requuest y busco la clave admin-
-        let userRol = contants_1.ROLES.user;
+        let userRol = constants_1.ROLES.user;
         if (adminKey === process.env.ADMIN_KEY) {
-            userRol = contants_1.ROLES.admin;
+            userRol = constants_1.ROLES.admin;
         }
         ;
         //Genero un código aleatorio de 6 caracteres
@@ -77,7 +77,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         ;
         const token = yield (0, generateJWT_1.generateJWT)(user.id);
-        return res.json({
+        return res.status(200).json({
             msj: "Inicio de sesión exitoso",
             user,
             token
@@ -92,4 +92,41 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const verifyUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, codigo } = req.body;
+    try {
+        const user = yield user_1.default.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                msj: "No se encontró el email en la base de datos"
+            });
+        }
+        ;
+        if (user.verificado) {
+            return res.status(400).json({
+                msj: "El usuario ya se encuentra verificado"
+            });
+        }
+        ;
+        if (codigo !== user.codigo) {
+            return res.status(400).json({
+                msj: "El código es incorrecto"
+            });
+        }
+        ;
+        const actualizedUser = yield user_1.default.findOneAndUpdate({ email }, { verificado: true }, { new: true });
+        return res.status(200).json({
+            msj: "Usuario verificado exitosamente",
+            actualizedUser
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor",
+            error
+        });
+    }
+});
+exports.verifyUser = verifyUser;
 //# sourceMappingURL=auth.js.map

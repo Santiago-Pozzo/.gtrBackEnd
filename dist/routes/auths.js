@@ -20,5 +20,11 @@ router.post('/login', [
     (0, express_validator_1.check)("email", "Ingrese un email válido").isEmail(),
     recollectErrors_1.recollectErrors,
 ], auth_1.login);
+router.patch('/verify', [
+    (0, express_validator_1.check)("codigo", "El codigo es obligatorio").not().isEmpty(),
+    (0, express_validator_1.check)("email", "El email es obligatorio").not().isEmpty(),
+    (0, express_validator_1.check)("email", "Ingrese un email válido").isEmail(),
+    recollectErrors_1.recollectErrors,
+], auth_1.verifyUser);
 exports.default = router;
 //# sourceMappingURL=auths.js.map

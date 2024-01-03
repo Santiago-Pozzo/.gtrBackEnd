@@ -6,7 +6,7 @@ const recollectErrors = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req); //Recibe todos los errores de los checks que están antes que este middelware en donde se lo llama 
     if (!errors.isEmpty()) {
         res.status(400).json({
-            msj: "Hubo errores al registrar el usuario",
+            msj: "Hubo errores al realizar el registro",
             errors
         });
     }

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hardDeleteOrder = exports.restoreOrder = exports.softDeleteOrder = exports.getUserOrdersByID = exports.getUserOrdersByEmail = exports.getByID = exports.getOrderByID = exports.getAllOrders = exports.newOrder = void 0;
+exports.hardDeleteOrder = exports.restoreOrder = exports.softDeleteOrder = exports.getUserOrdersByID = exports.getUserOrdersByEmail = exports.getByID = exports.getOrderByID = exports.getAllOrders = exports.getUserOrders = exports.newOrder = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const order_1 = __importDefault(require("../models/order"));
 const user_1 = __importDefault(require("../models/user"));
@@ -40,14 +40,8 @@ const transformArray = (productosArray) => __awaiter(void 0, void 0, void 0, fun
     return items;
 });
 const newOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, arrayProductos, precioTotalAlComprar } = req.body; //faltan verificar los datos recibidos
-    const user = yield user_1.default.findOne({ email: email }); //Con el mail me traigo el usuario correspondiente
-    if (!user) {
-        res.status(404).json({
-            msj: "No se encontró el usuario. Ingrese un mail válido"
-        });
-        return;
-    }
+    const confirmedUser = req.body.confirmedUser._id;
+    const { arrayProductos, precioTotalAlComprar } = req.body; //faltan verificar los datos recibidos
     const items = yield transformArray(arrayProductos);
     if (items.some(item => !item.producto)) { //Busco entre los items aquellos que no tengan un campo producto (los que no se encontraron son un objeto con un msj)
         res.status(404).json({
@@ -58,13 +52,13 @@ const newOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     ;
     const order = yield new order_1.default({
-        usuario: user,
+        usuario: confirmedUser,
         items: items,
         precioTotalAlComprar
     }).populate("usuario");
     try {
         yield order.save();
-        return res.json({
+        return res.status(201).json({
             msj: "Orden creada corectamente",
             order
         });
@@ -76,8 +70,32 @@ const newOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             error: error
         });
     }
-});
+}); //
 exports.newOrder = newOrder;
+const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userID = req.body.confirmedUser._id;
+    const consulta = { usuario: userID };
+    try {
+        const orders = yield order_1.default.find(consulta);
+        if (!orders) {
+            return res.status(401).json({
+                msj: "No se encontraron órdenes de compra"
+            });
+        }
+        return res.json({
+            msj: `Las órdenes del usuario ${req.body.confirmedUser.email} se encontraron correctamente`,
+            data: [...orders]
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(401).json({
+            msj: "Error interno del servidor",
+            error
+        });
+    }
+}); //
+exports.getUserOrders = getUserOrders;
 const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condicion = { estado: true };
     try {

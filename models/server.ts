@@ -6,6 +6,7 @@ import usersRoutes from "../routes/users";//como yo exporté por default el rout
 import productRoutes from "../routes/products";
 import orderRoutes from "../routes/orders";
 import authRoutes from "../routes/auths";
+import issuesRoutes from "../routes/issues";
 
 
 export class Server {
@@ -41,5 +42,6 @@ export class Server {
         this.app.use('/products', productRoutes);
         this.app.use('/orders', orderRoutes);
         this.app.use('/auth', authRoutes);
+        this.app.use('/issues', issuesRoutes);
     }
 }

@@ -12,7 +12,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const contants_1 = require("../helpers/contants");
+const constants_1 = require("../helpers/constants");
 const UserSchema = new mongoose_1.Schema({
     nombre: {
         type: String,
@@ -33,7 +33,7 @@ const UserSchema = new mongoose_1.Schema({
     },
     rol: {
         type: String,
-        default: contants_1.ROLES.user
+        default: constants_1.ROLES.user
     },
     codigo: {
         type: String,

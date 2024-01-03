@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import mongoose, { Types } from "mongoose";
+import mongoose, { ObjectId, Types } from "mongoose";
 
 import Order, { IOrder} from "../models/order"
 import User, { IUser } from "../models/user";
@@ -34,18 +34,9 @@ const transformArray = async (productosArray: any[]) => {
 
 export const newOrder = async (req:Request, res:Response) => {
 
-    const { email, arrayProductos, precioTotalAlComprar} = req.body; //faltan verificar los datos recibidos
+    const confirmedUser: ObjectId = req.body.confirmedUser._id;
+    const { arrayProductos, precioTotalAlComprar} = req.body; //faltan verificar los datos recibidos
     
-    const user = await User.findOne({ email: email }); //Con el mail me traigo el usuario correspondiente
-
-        if (!user){
-            res.status(404).json({
-                msj: "No se encontró el usuario. Ingrese un mail válido"
-            })
-
-            return
-        }
-
     const items = await transformArray(arrayProductos); 
 
         if (items.some(item=>!item.producto)){  //Busco entre los items aquellos que no tengan un campo producto (los que no se encontraron son un objeto con un msj)
@@ -57,9 +48,8 @@ export const newOrder = async (req:Request, res:Response) => {
             return
         };
 
-
     const order = await new Order({
-       usuario: user,
+       usuario: confirmedUser,
        items: items,
        precioTotalAlComprar 
     }).populate("usuario");
@@ -68,7 +58,7 @@ export const newOrder = async (req:Request, res:Response) => {
 
         await order.save();
     
-        return res.json({
+        return res.status(201).json({          //status 201 es de creación
             msj: "Orden creada corectamente",
             order
         })
@@ -82,7 +72,38 @@ export const newOrder = async (req:Request, res:Response) => {
         });
 
     }
-}
+};//
+
+export const getUserOrders = async (req:Request, res:Response) => {
+
+    const userID: ObjectId  = req.body.confirmedUser._id; 
+    const consulta = { usuario: userID };
+
+    try {
+
+        const orders = await Order.find(consulta);
+
+            if(!orders) {
+                return res.status(401).json({
+                    msj: "No se encontraron órdenes de compra"
+                })
+            }
+
+        return res.json({
+            msj: `Las órdenes del usuario ${req.body.confirmedUser.email} se encontraron correctamente`,
+            data: [...orders]
+        })
+
+    } catch(error){
+
+        console.error(error);
+        return res.status(401).json({
+            msj: "Error interno del servidor",
+            error
+        })
+
+    }
+}//
 
 export const getAllOrders = async (req:Request, res:Response) => {
     

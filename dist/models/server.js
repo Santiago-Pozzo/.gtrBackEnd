@@ -20,6 +20,7 @@ const users_1 = __importDefault(require("../routes/users")); //como yo exporté 
 const products_1 = __importDefault(require("../routes/products"));
 const orders_1 = __importDefault(require("../routes/orders"));
 const auths_1 = __importDefault(require("../routes/auths"));
+const issues_1 = __importDefault(require("../routes/issues"));
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -47,6 +48,7 @@ class Server {
         this.app.use('/products', products_1.default);
         this.app.use('/orders', orders_1.default);
         this.app.use('/auth', auths_1.default);
+        this.app.use('/issues', issues_1.default);
     }
 }
 exports.Server = Server;
