@@ -19,7 +19,7 @@ const validateJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     const token = req.headers["token"]; //recibo el token del header de la rquest y lo convierto a string
     if (!token) {
         res.status(401).json({
-            msj: "No hay token en la petición"
+            msj: "Falta el token en el header de la petición"
         });
         return;
     }
@@ -41,8 +41,8 @@ const validateJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
     catch (error) {
         console.error(error);
-        res.status(401).json({
-            msj: "Token no válido"
+        res.status(500).json({
+            msj: "Error del servidor al generar el token"
         });
     }
 });

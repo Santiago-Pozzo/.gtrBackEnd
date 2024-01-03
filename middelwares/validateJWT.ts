@@ -8,9 +8,8 @@ export const validateJWT = async ( req: Request, res:Response, next:NextFunction
 
         if(!token){
             res.status(401).json({
-                msj: "No hay token en la petición"
+                msj: "Falta el token en el header de la petición"
             });
-
             return
         }
 
@@ -31,7 +30,7 @@ export const validateJWT = async ( req: Request, res:Response, next:NextFunction
                     return
                 }
 
-            req.body.id = id                              //Con esta instrucción creo, en el body, una clave id con el valor de id que extraje del token
+            req.body.id = id                          //Con esta instrucción creo, en el body, una clave id con el valor de id que extraje del token
             req.body.confirmedUser = confirmedUser;   //Creo en el body una clave usuarioCOnfirmado con los datos de confirmedUser 
             //EL próximo middelware va a poder acceder al body    
 
@@ -40,8 +39,8 @@ export const validateJWT = async ( req: Request, res:Response, next:NextFunction
         } catch(error){
 
             console.error(error);
-            res.status(401).json({
-                msj: "Token no válido"
+            res.status(500).json({
+                msj: "Error del servidor al generar el token"
             })
             
         }

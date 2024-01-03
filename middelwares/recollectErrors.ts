@@ -7,7 +7,7 @@ export const recollectErrors = (req:Request, res:Response, next:NextFunction): v
 
     if(!errors.isEmpty()){
         res.status(400).json({
-            msj: "Hubo errores al realizar el registro",
+            msj: "Hubo errores al realizar la petición",
             errors
         })
     } else {

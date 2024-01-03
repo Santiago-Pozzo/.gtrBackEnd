@@ -8,107 +8,130 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restoreUser = exports.softDeleteUser = exports.hardDeleteUser = exports.updateUser = exports.newUser = exports.getUserByEmail = exports.getUsers = void 0;
+exports.restoreUser = exports.softDeleteUser = exports.hardDeleteUser = exports.updateUserLastName = exports.updateUserName = exports.getUserByEmail = exports.getUsers = void 0;
 const user_1 = __importDefault(require("../models/user"));
+const functions_1 = require("../helpers/functions");
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condicion = { estado: true };
-    const users = yield user_1.default.find(condicion);
-    res.json({
-        users
-    });
-});
+    try {
+        const users = yield user_1.default.find(condicion);
+        res.json({
+            users: [...users]
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor al buscar los usuarios"
+        });
+    }
+}); //
 exports.getUsers = getUsers;
 const getUserByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
-    // Verificar si el email cumple con el formato requerido
-    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
-    if (!isValidEmail) {
+    if (!(0, functions_1.isValidEmail)(email)) {
         return res.status(400).json({
-            msj: "El formato del correo electrónico no es válido."
+            msj: "El email no es válido"
         });
     }
-    const user = yield user_1.default.findOne({ email: email }); //La constante user puede ser de la clase IUser o puede ser null. En el metodo findOne establezco como condición que el campo email sea igual al valor de email que desestructuramos de la req
-    if (!user) {
-        res.json({
-            msj: "No hay usuarios registrados con ese email"
+    try {
+        const user = yield user_1.default.findOne({ email: email }); //La constante user puede ser de la clase IUser o puede ser null. En el metodo findOne establezco como condición que el campo email sea igual al valor de email que desestructuramos de la req
+        if (!user) {
+            return res.status(401).json({
+                msj: `No encontró usuario registrado con el mail ${email}`
+            });
+        }
+        return res.status(200).json({
+            msj: `Se encontró el usuario registrado con el mail ${email}`,
+            user
         });
-        return;
     }
-    res.json({
-        user
-    });
-});
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor"
+        });
+    }
+}); //
 exports.getUserByEmail = getUserByEmail;
-const newUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userData = req.body; //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
-    const user = new user_1.default(userData); // creo un usuario con el modelo de mongoose y los datos que vienen en el body de la req
-    yield user.save();
-    res.json({
-        msj: "Usuario creado corectamente",
-        user
-    });
-});
-exports.newUser = newUser;
-const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = req.params; //Desestructuro el email de los parametros de la 
-    const user = yield user_1.default.findOne({ email: email }); //Primero busco al usuario con el email y devuelvo un mensaje si no lo encontró
-    if (!user) {
-        res.json({
-            msj: "Usuario no encontrado"
+const updateUserName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, nombre } = req.body;
+    try {
+        const updatedUser = yield user_1.default.findByIdAndUpdate(id, { nombre: nombre }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a modificar.
+        return res.status(200).json({
+            msj: "Los datos se modificaron correctamente",
+            updatedUser
         });
-        return;
     }
-    const { _id } = user; //Si el usuario existe desestructuro su id para buscarlo y actualizar los datos necesarios (excepto el estado)
-    const _a = req.body, { estado } = _a, data = __rest(_a, ["estado"]); //Desestructuro del body del request: el estado y el resto de los campos con el spread operator en data 
-    const updatedUser = yield user_1.default.findByIdAndUpdate(_id, data); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
-    res.json({
-        updatedUser
-    });
-});
-exports.updateUser = updateUser;
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error al modificar los datos del usuario"
+        });
+    }
+}); //
+exports.updateUserName = updateUserName;
+const updateUserLastName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, apellido } = req.body;
+    try {
+        const updatedUser = yield user_1.default.findByIdAndUpdate(id, { apellido: apellido }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a modificar.
+        return res.status(200).json({
+            msj: "Los datos se modificaron correctamente",
+            updatedUser
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error al modificar los datos del usuario"
+        });
+    }
+}); //
+exports.updateUserLastName = updateUserLastName;
 const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params;
-    // Verificar si el email cumple con el formato requerido
-    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
-    if (!isValidEmail) {
+    if (!(0, functions_1.isValidEmail)(email)) {
         return res.status(400).json({
-            msj: "El formato del correo electrónico no es válido."
+            msj: "El email no es válido"
         });
     }
-    const user = yield user_1.default.findOneAndDelete({ email: email }); //Por mas que borre el usuario de la DB, cuando encuentra el usuario igualmente crea la const user con la info del usuario, por eso podemos usar el falsie en el if que sigue más abajo)
-    if (!user) { //Si no hay usuario con ese mail envío un menasje de error 
-        res.json({
-            msj: "No hay un usuario registrado con ese email"
+    if (email === req.body.confirmedUser.email) {
+        return res.status(400).json({
+            msj: "No es posible realizar un hard delete de un usuario con su propio token."
         });
-        return;
     }
-    res.json({
-        user
-    });
-});
+    try {
+        const user = yield user_1.default.findOneAndDelete({ email: email }); //Por mas que borre el usuario de la DB, cuando encuentra el usuario igualmente crea la const user con la info del usuario  (porque no agregue el argumento {new: true en el findoneAndDelete})   , por eso podemos usar el falsie en el if que sigue más abajo)
+        if (!user) {
+            return res.status(401).json({
+                msj: `No encontró usuario registrado con el mail ${email}`
+            });
+        }
+        return res.status(200).json({
+            msj: `Se eliminó de la base de datos el usuario registrado con el mail ${email}`,
+            user
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error del servidor al intentar eliminar definitivamente un usuario"
+        });
+    }
+}); //
 exports.hardDeleteUser = hardDeleteUser;
 const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params; //Desestructuro el email de los parametros de la Request
-    // Verificar si el email cumple con el formato requerido
-    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
-    if (!isValidEmail) {
-        return res.status(400).json({
-            msj: "El formato del correo electrónico no es válido."
+    try {
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(401).json({
+            msj: ""
         });
     }
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
@@ -125,11 +148,12 @@ const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.softDeleteUser = softDeleteUser;
 const restoreUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params;
-    // Verificar si el email cumple con el formato requerido
-    const isValidEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email);
-    if (!isValidEmail) {
-        return res.status(400).json({
-            msj: "El formato del correo electrónico no es válido."
+    try {
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(401).json({
+            msj: ""
         });
     }
     const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true }, { new: true });
