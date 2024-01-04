@@ -16,6 +16,9 @@ export interface IOrder {
     items: IOrderItem[],
     precioTotalAlComprar: number,
     estado: boolean,
+    pagada: boolean,
+    entregada: boolean,
+    cancelada: boolean
 };
 
 export const OrderSchema = new Schema<IOrder>({
@@ -28,7 +31,7 @@ export const OrderSchema = new Schema<IOrder>({
     usuario: {
         type: Schema.Types.ObjectId,
         ref: "User", //Con esto hago referencia que usuario va a ser un documento de la colección Users (construida con el modelo User que es lo que aclaramos en esta línea entre comillas)
-        required: true
+        required: [true, "El usuario es obligatorio"]
     },
 
     items: [
@@ -54,14 +57,33 @@ export const OrderSchema = new Schema<IOrder>({
 
     precioTotalAlComprar: {
         type: Number,
-        required: true
+        required: [true, "El precio total al comprar es obligatorio"]
     },
 
     estado: {
         type: Boolean,
         required: true,
         default: true
+    },
+
+    pagada: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+
+    entregada: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+
+    cancelada: {
+        type: Boolean,
+        required: true,
+        default: false
     }
+
 })
 
 

@@ -6,6 +6,7 @@ const validateJWT_1 = require("../middelwares/validateJWT");
 const recollectErrors_1 = require("../middelwares/recollectErrors");
 const isVerifiedUser_1 = require("../middelwares/isVerifiedUser");
 const express_validator_1 = require("express-validator");
+const isAdmin_1 = require("../middelwares/isAdmin");
 const router = (0, express_1.Router)();
 router.post('/', [
     validateJWT_1.validateJWT, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
@@ -18,12 +19,20 @@ router.get('/', [
     validateJWT_1.validateJWT, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
     recollectErrors_1.recollectErrors,
 ], order_1.getUserOrders);
-router.get('/', order_1.getAllOrders);
-router.get('/:orderID', order_1.getOrderByID);
-router.get('/get-user-orders-by-email/:userEmail', order_1.getUserOrdersByEmail);
-router.get('/get-orders-by-ID/:userID', order_1.getUserOrdersByID);
-router.put('/soft-delete-order/:orderID', order_1.softDeleteOrder);
-router.put('/restore/:orderID', order_1.restoreOrder);
-router.delete('/hard-delete-order/:orderID', order_1.hardDeleteOrder);
+router.get('/get-all', [
+    validateJWT_1.validateJWT,
+    isVerifiedUser_1.isVerifiedUser,
+    isAdmin_1.isAdmin
+], order_1.getAllOrders); //Recibe el token (de admin) en el header
+router.get('/get-order/orderID/:orderID', [
+    validateJWT_1.validateJWT,
+    isVerifiedUser_1.isVerifiedUser,
+    isAdmin_1.isAdmin
+], order_1.getOrderByID); // Recibe el token (de admin) en el header y el ID de la orden por param
+router.get('/get-user-orders/email/:userEmail', [
+    validateJWT_1.validateJWT,
+    isVerifiedUser_1.isVerifiedUser,
+    isAdmin_1.isAdmin
+], order_1.getUserOrdersByEmail); // Recibe el token (de admin) en el header y el mail de usuario por param
 exports.default = router;
 //# sourceMappingURL=orders.js.map

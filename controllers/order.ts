@@ -103,7 +103,52 @@ export const getUserOrders = async (req:Request, res:Response) => {
         })
 
     }
-}//
+};//
+
+export const getUserOrdersByEmail =  async (req:Request, res:Response) => {
+
+    const { userEmail } = req.params;
+    
+        // Verificar si el email cumple con el formato requerido
+  
+        if ( !isValidEmail(userEmail) ) {
+            return res.status(400).json({
+                msj: "El formato del correo electrónico no es válido."
+            });
+        }
+
+    try {
+
+        const user:IUser | null = await User.findOne({email: userEmail}); 
+
+            if(!user) {
+                 return res.status(400).json({
+                    msj: `No hay usuarios registrados con el correo ${userEmail}`
+                })
+            };
+
+        const orders = await getByID(user._id);
+
+            if (!orders.length) {
+                return res.json ({
+                    msj: "El usuario no tiene compras realizadas"
+                }); 
+            }
+
+        return res.status(200).json ({
+        msj: "Ordenes de compras encontradas",
+        ordenes: [...orders]
+        });
+
+    } catch(error){
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor",
+            error
+        });
+    }
+
+};//
 
 export const getAllOrders = async (req:Request, res:Response) => {
     
@@ -113,8 +158,9 @@ export const getAllOrders = async (req:Request, res:Response) => {
 
         const orders = await Order.find(condicion);
 
-        return res.json({
-            orders
+        return res.status(200).json({
+            msj: "Órdenes de compra encontradas satisfactoriamente",
+            ordenes: [...orders]
         })
 
     } catch(error) {
@@ -128,7 +174,7 @@ export const getAllOrders = async (req:Request, res:Response) => {
     }
 
 
-};
+};//
 
 export const getOrderByID = async (req:Request, res:Response) => {
 
@@ -150,7 +196,8 @@ export const getOrderByID = async (req:Request, res:Response) => {
                 })
             };
 
-        return res.json({
+        return res.status(200).json({
+            msj: `Se encontró la orden de compra _id: ${orderID}`,
             order
         })
 
@@ -163,55 +210,15 @@ export const getOrderByID = async (req:Request, res:Response) => {
         });
 
     }
-}
+}//
+
+
+
+
+
 
 //Función auxiliar para buscar ordenes con el Id de usuario. Devuelve las ordenes del usuario o null (no verifica el formato de la ID)
 export const getByID = async (userID: string) => await Order.find({ usuario: userID });
-
-export const getUserOrdersByEmail =  async (req:Request, res:Response) => {
-
-    const { userEmail } = req.params;
-    
-        // Verificar si el email cumple con el formato requerido
-  
-        if (isValidEmail(userEmail)) {
-            return res.status(400).json({
-                msj: "El formato del correo electrónico no es válido."
-            });
-        }
-
-    try {
-
-        const user:IUser | null = await User.findOne({email: userEmail}); 
-
-            if(!user) {
-                 return res.json({
-                    msj: "No hay usuarios registrados con ese email"
-                })
-            };
-
-        const orders = await getByID(user._id);
-
-            if (!orders) {
-                return res.json ({
-                    msj: "El usuario no tiene compras realizadas"
-                }); 
-            }
-
-        return res.json ({
-        msj: "Ordenes de compras encontradas",
-        orders
-        });
-
-    } catch(error){
-        console.error(error);
-        return res.status(500).json({
-            msj: "Error interno del servidor",
-            error: error
-        });
-    }
-
-};
 
 export const getUserOrdersByID =  async (req:Request, res:Response) => {
 

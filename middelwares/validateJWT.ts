@@ -40,7 +40,7 @@ export const validateJWT = async ( req: Request, res:Response, next:NextFunction
 
             console.error(error);
             res.status(500).json({
-                msj: "Error del servidor al generar el token"
+                msj: "Error del servidor. Token incorrecto"
             })
             
         }

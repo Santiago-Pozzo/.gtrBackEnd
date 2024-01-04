@@ -42,7 +42,7 @@ const validateJWT = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     catch (error) {
         console.error(error);
         res.status(500).json({
-            msj: "Error del servidor al generar el token"
+            msj: "Error del servidor. Token incorrecto"
         });
     }
 });

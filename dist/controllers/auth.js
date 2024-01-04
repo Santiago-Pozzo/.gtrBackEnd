@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyUser = exports.login = exports.register = void 0;
+exports.setNewAdminByEmail = exports.verifyUser = exports.login = exports.register = void 0;
 const user_1 = __importDefault(require("../models/user"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const randomstring_1 = __importDefault(require("randomstring"));
@@ -65,7 +65,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield user_1.default.findOne({ email });
         if (!user) {
             return res.status(400).json({
-                msj: "No se encontró el email en la base de datos"
+                msj: `No se encontró el email ${email} en la base de datos`
             });
         }
         ;
@@ -129,4 +129,28 @@ const verifyUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.verifyUser = verifyUser;
+const setNewAdminByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    const user = yield user_1.default.findOne({ email });
+    if (!user) {
+        return res.status(400).json({
+            msj: `No se encontró un usuario con el email ${email}`
+        });
+    }
+    try {
+        const newAdmin = yield user_1.default.findOneAndUpdate({ email }, { rol: constants_1.ROLES.admin }, { new: true });
+        return res.status(200).json({
+            msj: `El usuario registrado con el correo ${email} fue establecido como administrador`,
+            newAdmin
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor",
+            error
+        });
+    }
+});
+exports.setNewAdminByEmail = setNewAdminByEmail;
 //# sourceMappingURL=auth.js.map

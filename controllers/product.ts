@@ -7,139 +7,198 @@ export const getProducts = async (req:Request, res:Response) => {
     
     const condicion = { estado: true };
 
-    const products = await Product.find(condicion);
+    try {
+        const products = await Product.find(condicion);
 
-    res.json({
-        products
-    })    
-}
+        return res.status(200).json({
+            msj: "Producto encontrados exitosamente",
+            productos: [...products]
+        })    
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor.",
+            error
+        })
+    }
+}//
+
 
 export const newProduct = async (req:Request, res:Response) => {
 
-    const productData: IProduct = req.body //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
+    const productData: IProduct = req.body 
 
     const isExitingProduct = await Product.findOne({ id_producto: productData.id_producto });//Verifico que el id ingresado en el body no exita en la base de datos
 
-    if(isExitingProduct) {
-        res.json({
-            msj: "El id_producto ingresado ya existe. Puede consultar los productos de la base de datos para elegir otro id",
+        if(isExitingProduct) {
+            return res.status(400).json({
+                msj: `El id_producto ${productData.id_producto} ya existe. Puede consultar los productos de la base de datos para elegir otro id`,
+            })
+        }
+
+    try {
+
+        const product = new Product(productData)
+            
+        await product.save();
+
+        return res.status(201).json({
+            msj: "Producto creado corectamente",
+            product
         })
-        return;
+
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo agregar el producto a la base de datos",
+            error
+        })
     }
-
-    const product = new Product(productData)// creo un usuario con el modelo de mongoose y los datos que vienen en el body de la req
-        
-    await product.save();
-
-    res.json({
-        msj: "Producto creado corectamente",
-        product
-    })
-
-}
+}//
 
 export const updateProduct =async (req:Request, res:Response) => {
-    console.log("jsfdhjfsdhjfdsjdsfjjdfsjjd");
+
     const { id_producto } = req.params; 
-    
-       
-    const  product   = await Product.findOne({id_producto: id_producto}); 
-    if (!product) {
-        res.json({
-           msj: "Producto no encontrado"
-        });
-        return;
-    }
+           
+    const  product = await Product.findOne({id_producto: id_producto}); 
+        if (!product) {
+            return res.status(404).json({
+                msj: `No se encontró el producto con id_producto: ${id_producto}`
+            });
+
+        };
 
     const { _id } = product; 
 
-    const {  estado, ...data } = req.body; 
+    const { estado, ...newdata } = req.body; 
     
-    const updatedProduct = await Product.findByIdAndUpdate( _id,  data ); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate( _id,  newdata, { new: true } ); 
 
-    res.json({
-        msj: "Los datos del producto han sido actualizados",
-        updatedProduct
-    })
+        return res.status(200).json({
+            msj: `Los datos del producto con id_producto: ${id_producto} se actualizaron correctamente`,
+            updatedProduct
+        })
 
-};
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo actualizar la información del producto",
+            error
+        })
+    };
+};//
 
 export const getProductByID =async (req:Request, res:Response) => {
     
     const { id_producto } = req.params; 
 
-    const product:IProduct | null = await Product.findOne({id_producto: id_producto}); 
+    try {
 
-    if (!product) {
-        res.json({
-            msj: "No se encontró ningún producto"
+        const product:IProduct | null = await Product.findOne({id_producto: id_producto}); 
+
+            if (!product) {
+                return res.status(404).json({
+                    msj: `No se encontró ningún producto con id_producto: ${id_producto}`
+                })
+            }
+
+        return res.status(200).json({
+            msj: `Producto con id_producto: ${id_producto}, encontrado exitosamente`,
+            product
         })
 
-        return
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor.",
+            error
+        })
     }
 
-    res.json({
-        product
-    })
 
-};
+};//
 
 export const hardDeleteProduct = async (req:Request, res:Response) =>{
+console.log("holis");
 
     const { id_producto } = req.params;
 
-    const product = await Product.findOneAndDelete({ id_producto: id_producto }) 
+    try {
 
-    if (!product){                                        
-        res.json({
-            msj: "No se encontró el producto"
+        const product = await Product.findOneAndDelete({ id_producto: id_producto }) 
+
+            if (!product){                                        
+                return res.status(404).json({
+                    msj: `No se encontró el producto con id_producto: ${id_producto}`
+                });
+            }
+
+        return res.status(200).json({
+            msj: `El producto con id_producto: ${id_producto} se eliminó exitosamente`,
+            product
+        });
+
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo eliminar el producto",
+            error
         })
-
-        return
-    }
-
-    res.json({
-        product
-    })
-
-};
+    };
+};//
 
 export const softDeleteProduct =async (req:Request, res:Response) => {
     
     const { id_producto } = req.params; 
 
-    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: false }, { new: true }); 
-    if (!product) {
+    try {
+
+        const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: false }, { new: true }); 
+            
+            if (!product) {
+                return res.status(404).json({
+                    msj: `No se encontró el producto con id_producto: ${id_producto}`
+                });
+            }
+
         res.json({
-            msj: "Producto no encontrado"
-        });
-        return;
-    }
-
-    res.json({
-        msj: "Se eliminó el producto",
-        product
-    })
-
-};
+            msj: `El producto con id_producto: ${id_producto} se eliminó exitosamente`,
+            product
+        })
+        
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo eliminar el producto",
+            error
+        })
+    };
+};//
 
 export const restoreProduct =async (req:Request, res:Response) => {
-    
     const { id_producto } = req.params; 
 
-    const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: true }, { new: true }); 
+    try {
 
-    if (!product) {
+        const product = await Product.findOneAndUpdate({id_producto: id_producto}, { estado: true }, { new: true }); 
+            
+            if (!product) {
+                return res.status(404).json({
+                    msj: `No se encontró el producto con id_producto: ${id_producto}`
+                });
+            }
+
         res.json({
-            msj: "Producto no encontrado"
-        });
-
-        return;
-    }
-
-    res.json({
-        msj: "Se reestableció el producto",
-        product
-    })
-
-};
+            msj: `El producto con id_producto: ${id_producto} se reestableció exitosamente`,
+            product
+        })
+        
+    } catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo reestablecer el producto",
+            error
+        })
+    };
+};//

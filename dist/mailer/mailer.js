@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMail = void 0;
+exports.sendNewPass = exports.sendMail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 //Configuramos el transporte de nodemailer para usar Gmail
 const transporter = nodemailer_1.default.createTransport({
@@ -42,4 +42,23 @@ const sendMail = (to, code) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.sendMail = sendMail;
+const sendNewPass = (to, pass) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const mailOptions = {
+            from: "",
+            to, //La clave to tiene como valor lo que pasamos en el primer parametro 
+            subjetc: "Recuperación de contraseña para tu cuenta en .GTR",
+            text: `
+                Tu nueva contraseña para .GTR es: ${pass}.
+                Recuerda cambiar tu contraseña después de iniciar sesión
+            `
+        };
+        yield transporter.sendMail(mailOptions);
+        console.log("El correo de recuperación de contraseña se envió correctamente");
+    }
+    catch (_b) {
+        console.error("Error al enviar el correo electrónico");
+    }
+});
+exports.sendNewPass = sendNewPass;
 //# sourceMappingURL=mailer.js.map

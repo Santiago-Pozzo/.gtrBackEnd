@@ -27,104 +27,169 @@ exports.restoreProduct = exports.softDeleteProduct = exports.hardDeleteProduct =
 const product_1 = __importDefault(require("../models/product"));
 const getProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condicion = { estado: true };
-    const products = yield product_1.default.find(condicion);
-    res.json({
-        products
-    });
-});
+    try {
+        const products = yield product_1.default.find(condicion);
+        return res.status(200).json({
+            msj: "Producto encontrados exitosamente",
+            productos: [...products]
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor.",
+            error
+        });
+    }
+}); //
 exports.getProducts = getProducts;
 const newProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const productData = req.body; //obtengo los datos enviados a traves del body de la request (que tienen que coincidir con lo establecido en IUser)
+    const productData = req.body;
     const isExitingProduct = yield product_1.default.findOne({ id_producto: productData.id_producto }); //Verifico que el id ingresado en el body no exita en la base de datos
     if (isExitingProduct) {
-        res.json({
-            msj: "El id_producto ingresado ya existe. Puede consultar los productos de la base de datos para elegir otro id",
+        return res.status(400).json({
+            msj: `El id_producto ${productData.id_producto} ya existe. Puede consultar los productos de la base de datos para elegir otro id`,
         });
-        return;
     }
-    const product = new product_1.default(productData); // creo un usuario con el modelo de mongoose y los datos que vienen en el body de la req
-    yield product.save();
-    res.json({
-        msj: "Producto creado corectamente",
-        product
-    });
-});
+    try {
+        const product = new product_1.default(productData);
+        yield product.save();
+        return res.status(201).json({
+            msj: "Producto creado corectamente",
+            product
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo agregar el producto a la base de datos",
+            error
+        });
+    }
+}); //
 exports.newProduct = newProduct;
 const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("jsfdhjfsdhjfdsjdsfjjdfsjjd");
     const { id_producto } = req.params;
     const product = yield product_1.default.findOne({ id_producto: id_producto });
     if (!product) {
-        res.json({
-            msj: "Producto no encontrado"
+        return res.status(404).json({
+            msj: `No se encontró el producto con id_producto: ${id_producto}`
         });
-        return;
     }
+    ;
     const { _id } = product;
-    const _a = req.body, { estado } = _a, data = __rest(_a, ["estado"]);
-    const updatedProduct = yield product_1.default.findByIdAndUpdate(_id, data); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
-    res.json({
-        msj: "Los datos del producto han sido actualizados",
-        updatedProduct
-    });
-});
+    const _a = req.body, { estado } = _a, newdata = __rest(_a, ["estado"]);
+    try {
+        const updatedProduct = yield product_1.default.findByIdAndUpdate(_id, newdata, { new: true });
+        return res.status(200).json({
+            msj: `Los datos del producto con id_producto: ${id_producto} se actualizaron correctamente`,
+            updatedProduct
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo actualizar la información del producto",
+            error
+        });
+    }
+    ;
+}); //
 exports.updateProduct = updateProduct;
 const getProductByID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOne({ id_producto: id_producto });
-    if (!product) {
-        res.json({
-            msj: "No se encontró ningún producto"
+    try {
+        const product = yield product_1.default.findOne({ id_producto: id_producto });
+        if (!product) {
+            return res.status(404).json({
+                msj: `No se encontró ningún producto con id_producto: ${id_producto}`
+            });
+        }
+        return res.status(200).json({
+            msj: `Producto con id_producto: ${id_producto}, encontrado exitosamente`,
+            product
         });
-        return;
     }
-    res.json({
-        product
-    });
-});
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor.",
+            error
+        });
+    }
+}); //
 exports.getProductByID = getProductByID;
 const hardDeleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("holis");
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOneAndDelete({ id_producto: id_producto });
-    if (!product) {
-        res.json({
-            msj: "No se encontró el producto"
+    try {
+        const product = yield product_1.default.findOneAndDelete({ id_producto: id_producto });
+        if (!product) {
+            return res.status(404).json({
+                msj: `No se encontró el producto con id_producto: ${id_producto}`
+            });
+        }
+        return res.status(200).json({
+            msj: `El producto con id_producto: ${id_producto} se eliminó exitosamente`,
+            product
         });
-        return;
     }
-    res.json({
-        product
-    });
-});
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo eliminar el producto",
+            error
+        });
+    }
+    ;
+}); //
 exports.hardDeleteProduct = hardDeleteProduct;
 const softDeleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: false }, { new: true });
-    if (!product) {
+    try {
+        const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: false }, { new: true });
+        if (!product) {
+            return res.status(404).json({
+                msj: `No se encontró el producto con id_producto: ${id_producto}`
+            });
+        }
         res.json({
-            msj: "Producto no encontrado"
+            msj: `El producto con id_producto: ${id_producto} se eliminó exitosamente`,
+            product
         });
-        return;
     }
-    res.json({
-        msj: "Se eliminó el producto",
-        product
-    });
-});
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo eliminar el producto",
+            error
+        });
+    }
+    ;
+}); //
 exports.softDeleteProduct = softDeleteProduct;
 const restoreProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id_producto } = req.params;
-    const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: true }, { new: true });
-    if (!product) {
+    try {
+        const product = yield product_1.default.findOneAndUpdate({ id_producto: id_producto }, { estado: true }, { new: true });
+        if (!product) {
+            return res.status(404).json({
+                msj: `No se encontró el producto con id_producto: ${id_producto}`
+            });
+        }
         res.json({
-            msj: "Producto no encontrado"
+            msj: `El producto con id_producto: ${id_producto} se reestableció exitosamente`,
+            product
         });
-        return;
     }
-    res.json({
-        msj: "Se reestableció el producto",
-        product
-    });
-});
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo reestablecer el producto",
+            error
+        });
+    }
+    ;
+}); //
 exports.restoreProduct = restoreProduct;
 //# sourceMappingURL=product.js.map

@@ -4,6 +4,7 @@ import { validateJWT } from "../middelwares/validateJWT";
 import { recollectErrors } from "../middelwares/recollectErrors";
 import { isVerifiedUser } from "../middelwares/isVerifiedUser";
 import { check } from "express-validator";
+import { isAdmin } from "../middelwares/isAdmin";
 
 const router = Router();
 
@@ -21,19 +22,23 @@ router.get('/', [
         recollectErrors,
         ], getUserOrders);
 
-router.get('/', getAllOrders);
+router.get('/get-all', [
+        validateJWT,
+        isVerifiedUser,
+        isAdmin
+        ], getAllOrders); //Recibe el token (de admin) en el header
 
-router.get('/:orderID',getOrderByID);
+router.get('/get-order/orderID/:orderID', [
+        validateJWT,
+        isVerifiedUser,
+        isAdmin
+        ], getOrderByID);// Recibe el token (de admin) en el header y el ID de la orden por param
 
-router.get('/get-user-orders-by-email/:userEmail', getUserOrdersByEmail);
-
-router.get('/get-orders-by-ID/:userID', getUserOrdersByID);
-
-router.put('/soft-delete-order/:orderID', softDeleteOrder);
-
-router.put('/restore/:orderID', restoreOrder);
-
-router.delete('/hard-delete-order/:orderID', hardDeleteOrder);
+router.get('/get-user-orders/email/:userEmail', [
+        validateJWT,
+        isVerifiedUser,
+        isAdmin
+        ],getUserOrdersByEmail); // Recibe el token (de admin) en el header y el mail de usuario por param
 
 
 export default router;

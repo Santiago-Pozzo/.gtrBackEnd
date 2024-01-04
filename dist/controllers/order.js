@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hardDeleteOrder = exports.restoreOrder = exports.softDeleteOrder = exports.getUserOrdersByID = exports.getUserOrdersByEmail = exports.getByID = exports.getOrderByID = exports.getAllOrders = exports.getUserOrders = exports.newOrder = void 0;
+exports.hardDeleteOrder = exports.restoreOrder = exports.softDeleteOrder = exports.getUserOrdersByID = exports.getByID = exports.getOrderByID = exports.getAllOrders = exports.getUserOrdersByEmail = exports.getUserOrders = exports.newOrder = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const order_1 = __importDefault(require("../models/order"));
 const user_1 = __importDefault(require("../models/user"));
@@ -96,12 +96,49 @@ const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 }); //
 exports.getUserOrders = getUserOrders;
+const getUserOrdersByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userEmail } = req.params;
+    // Verificar si el email cumple con el formato requerido
+    if (!(0, functions_1.isValidEmail)(userEmail)) {
+        return res.status(400).json({
+            msj: "El formato del correo electrónico no es válido."
+        });
+    }
+    try {
+        const user = yield user_1.default.findOne({ email: userEmail });
+        if (!user) {
+            return res.status(400).json({
+                msj: `No hay usuarios registrados con el correo ${userEmail}`
+            });
+        }
+        ;
+        const orders = yield (0, exports.getByID)(user._id);
+        if (!orders.length) {
+            return res.json({
+                msj: "El usuario no tiene compras realizadas"
+            });
+        }
+        return res.status(200).json({
+            msj: "Ordenes de compras encontradas",
+            ordenes: [...orders]
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servidor",
+            error
+        });
+    }
+}); //
+exports.getUserOrdersByEmail = getUserOrdersByEmail;
 const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condicion = { estado: true };
     try {
         const orders = yield order_1.default.find(condicion);
-        return res.json({
-            orders
+        return res.status(200).json({
+            msj: "Órdenes de compra encontradas satisfactoriamente",
+            ordenes: [...orders]
         });
     }
     catch (error) {
@@ -111,7 +148,7 @@ const getAllOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             error: error
         });
     }
-});
+}); //
 exports.getAllOrders = getAllOrders;
 const getOrderByID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { orderID } = req.params;
@@ -129,7 +166,8 @@ const getOrderByID = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             });
         }
         ;
-        return res.json({
+        return res.status(200).json({
+            msj: `Se encontró la orden de compra _id: ${orderID}`,
             order
         });
     }
@@ -140,47 +178,11 @@ const getOrderByID = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             error: error
         });
     }
-});
+}); //
 exports.getOrderByID = getOrderByID;
 //Función auxiliar para buscar ordenes con el Id de usuario. Devuelve las ordenes del usuario o null (no verifica el formato de la ID)
 const getByID = (userID) => __awaiter(void 0, void 0, void 0, function* () { return yield order_1.default.find({ usuario: userID }); });
 exports.getByID = getByID;
-const getUserOrdersByEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userEmail } = req.params;
-    // Verificar si el email cumple con el formato requerido
-    if ((0, functions_1.isValidEmail)(userEmail)) {
-        return res.status(400).json({
-            msj: "El formato del correo electrónico no es válido."
-        });
-    }
-    try {
-        const user = yield user_1.default.findOne({ email: userEmail });
-        if (!user) {
-            return res.json({
-                msj: "No hay usuarios registrados con ese email"
-            });
-        }
-        ;
-        const orders = yield (0, exports.getByID)(user._id);
-        if (!orders) {
-            return res.json({
-                msj: "El usuario no tiene compras realizadas"
-            });
-        }
-        return res.json({
-            msj: "Ordenes de compras encontradas",
-            orders
-        });
-    }
-    catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            msj: "Error interno del servidor",
-            error: error
-        });
-    }
-});
-exports.getUserOrdersByEmail = getUserOrdersByEmail;
 const getUserOrdersByID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userID } = req.params;
     // Verificar si el orderID cumple con el formato requerido

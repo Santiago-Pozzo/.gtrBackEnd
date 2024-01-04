@@ -5,6 +5,9 @@ const auth_1 = require("../controllers/auth");
 const express_validator_1 = require("express-validator");
 const validations_1 = require("../helpers/validations");
 const recollectErrors_1 = require("../middelwares/recollectErrors");
+const validateJWT_1 = require("../middelwares/validateJWT");
+const isVerifiedUser_1 = require("../middelwares/isVerifiedUser");
+const isAdmin_1 = require("../middelwares/isAdmin");
 const router = (0, express_1.Router)();
 router.post('/register', [
     (0, express_validator_1.check)("nombre", "El nombre es obligatorio").not().isEmpty(),
@@ -26,5 +29,13 @@ router.patch('/verify', [
     (0, express_validator_1.check)("email", "Ingrese un email válido").isEmail(),
     recollectErrors_1.recollectErrors,
 ], auth_1.verifyUser);
+router.patch('/set-new-admin', [
+    validateJWT_1.validateJWT,
+    isVerifiedUser_1.isVerifiedUser,
+    isAdmin_1.isAdmin,
+    (0, express_validator_1.check)("email", "El email es obligatorio").not().isEmpty(),
+    (0, express_validator_1.check)("email", "Ingrese un email válido").isEmail(),
+    recollectErrors_1.recollectErrors,
+], auth_1.setNewAdminByEmail); //Recibe el token (de administrador) en el header y el mail del usuario en el body
 exports.default = router;
 //# sourceMappingURL=auths.js.map

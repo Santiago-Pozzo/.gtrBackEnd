@@ -10,7 +10,7 @@ export const generateJWT = ( id: string = ""): Promise<string> =>{
             payload,
             process.env.TOKEN_KEY as string,
             {
-                expiresIn: "1h"
+                expiresIn: "4h"
             },
             (err: Error | null, token: string | undefined )=>{
                 

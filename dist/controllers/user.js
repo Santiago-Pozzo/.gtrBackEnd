@@ -12,9 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restoreUser = exports.softDeleteUser = exports.hardDeleteUser = exports.updateUserLastName = exports.updateUserName = exports.getUserByEmail = exports.getUsers = void 0;
+exports.restorePassword = exports.restoreUser = exports.softDeleteUser = exports.hardDeleteUser = exports.updateUserPass = exports.updateUserEmail = exports.updateUserLastName = exports.updateUserName = exports.getUserByEmail = exports.getUsers = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const randomstring_1 = __importDefault(require("randomstring"));
 const user_1 = __importDefault(require("../models/user"));
 const functions_1 = require("../helpers/functions");
+const mailer_1 = require("../mailer/mailer");
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const condicion = { estado: true };
     try {
@@ -92,6 +95,47 @@ const updateUserLastName = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 }); //
 exports.updateUserLastName = updateUserLastName;
+const updateUserEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, email } = req.body;
+    const randomCode = randomstring_1.default.generate(6);
+    try {
+        const updatedUser = yield user_1.default.findByIdAndUpdate(id, {
+            email: email,
+            verificado: false,
+            codigo: randomCode
+        }, { new: true });
+        return res.status(200).json({
+            msj: `El email se modificó correctamente. Se envió un nuevo código de verificación al correo ${email}`,
+            updatedUser
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servido. No se pudo modificar los datos del usuario"
+        });
+    }
+}); //
+exports.updateUserEmail = updateUserEmail;
+const updateUserPass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, contraseña } = req.body;
+    const salt = bcryptjs_1.default.genSaltSync();
+    const encryptedPass = bcryptjs_1.default.hashSync(contraseña, salt);
+    try {
+        const updatedUser = yield user_1.default.findByIdAndUpdate(id, { contraseña: encryptedPass }, { new: true });
+        return res.status(200).json({
+            msj: `La contraseña se modificó correctamente.`,
+            updatedUser
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error interno del servido. No se pudo modificar los datos del usuario"
+        });
+    }
+}); //
+exports.updateUserPass = updateUserPass;
 const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.params;
     if (!(0, functions_1.isValidEmail)(email)) {
@@ -125,48 +169,89 @@ const hardDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
 }); //
 exports.hardDeleteUser = hardDeleteUser;
 const softDeleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = req.params; //Desestructuro el email de los parametros de la Request
+    const id = req.body.id;
     try {
+        const user = yield user_1.default.findByIdAndUpdate(id, { estado: false, verificado: false }, { new: true });
+        return res.status(200).json({
+            msj: `Se elimino correctamente el usuario registrado con el mail ${req.body.confirmedUser.email}`,
+            user
+        });
     }
     catch (error) {
         console.error(error);
-        return res.status(401).json({
-            msj: ""
+        return res.status(500).json({
+            msj: "Error interno del servidor. No se pudo eliminar el usuario"
         });
     }
-    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: false }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
-    if (!user) {
-        res.json({
-            msj: "Usuario no encontrado"
-        });
-        return;
-    }
-    res.json({
-        user
-    });
-});
+}); //
 exports.softDeleteUser = softDeleteUser;
 const restoreUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email } = req.params;
+    const { email, contraseña } = req.body;
     try {
+        const userToRestore = yield user_1.default.findOne({ email });
+        if (!userToRestore) {
+            return res.status(400).json({
+                msj: `No se encontró el email ${email} en la base de datos`
+            });
+        }
+        ;
+        const validatePassword = bcryptjs_1.default.compareSync(contraseña, userToRestore.contraseña);
+        if (!validatePassword) {
+            return res.status(400).json({
+                msj: "La contraseña es incorrecta"
+            });
+        }
+        ;
+        const randomCode = randomstring_1.default.generate(6);
+        const user = yield user_1.default.findOneAndUpdate({ email: email }, {
+            estado: true,
+            verificado: false,
+            codigo: randomCode
+        }, { new: true });
+        yield (0, mailer_1.sendMail)(email, randomCode);
+        return res.status(200).json({
+            msj: `Usuario reestablecido correctamente. Sen envió el nuevo código de verificación al correo ${email}`,
+            user
+        });
     }
     catch (error) {
         console.error(error);
         return res.status(401).json({
-            msj: ""
+            msj: "Error interno del servido. No se pudo reestablecer el usuario"
         });
     }
-    const user = yield user_1.default.findOneAndUpdate({ email: email }, { estado: true }, { new: true });
-    if (!user) {
-        res.json({
-            msj: "Usuario no encontrado"
-        });
-        return;
-    }
-    res.json({
-        msj: "Se reestableció el usuario",
-        user
-    });
-});
+}); //
 exports.restoreUser = restoreUser;
+const restorePassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    const user = yield user_1.default.findOne({ email });
+    if (!user) {
+        return res.status(400).json({
+            msj: `No se encontraron usuarios registrados con el el email ${email}`
+        });
+    }
+    if (!user.verificado) {
+        yield (0, mailer_1.sendMail)(email, user.codigo);
+        return res.status(400).json({
+            msj: `No se puede reestablecer la contraseña. El correo ${email} está registrado pero no fue verificado. Se reenvió el código por email para que pueda conpletar la verificación`
+        });
+    }
+    const randomPass = randomstring_1.default.generate(8);
+    const salt = bcryptjs_1.default.genSaltSync();
+    const encryptedPass = bcryptjs_1.default.hashSync(randomPass, salt);
+    try {
+        yield (0, mailer_1.sendNewPass)(email, randomPass);
+        const updatedUser = yield user_1.default.findOneAndUpdate({ email }, { contraseña: encryptedPass }, { new: true });
+        return res.status(400).json({
+            msj: `Se envió la contraseña de recuperación al correo ${email}`
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(401).json({
+            msj: "Error interno del servido. No se pudo reestablecer la contraseña"
+        });
+    }
+}); //
+exports.restorePassword = restorePassword;
 //# sourceMappingURL=user.js.map

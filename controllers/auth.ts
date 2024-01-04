@@ -68,7 +68,7 @@ export const login = async ( req:Request, res: Response ) => {
 
             if( !user ){
                 return res.status(400).json({
-                    msj: "No se encontró el email en la base de datos"
+                    msj: `No se encontró el email ${email} en la base de datos`
                 })
             };
 
@@ -141,4 +141,37 @@ export const verifyUser = async ( req:Request, res: Response ) => {
         })
 
     }
+}
+
+export const setNewAdminByEmail = async ( req:Request, res: Response ) => {
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+        if (!user){
+            return res.status(400).json({
+                msj: `No se encontró un usuario con el email ${email}`
+            })
+        } 
+
+    try {
+
+        const newAdmin = await User.findOneAndUpdate ({ email }, { rol: ROLES.admin }, { new: true })
+
+        return res.status(200).json({
+            msj: `El usuario registrado con el correo ${email} fue establecido como administrador`,
+            newAdmin
+        })
+
+    } catch(error) {
+
+        console.error(error);
+        return res.status(500).json({
+            msj: "Error en el servidor",
+            error
+        })
+
+    }
+
 }

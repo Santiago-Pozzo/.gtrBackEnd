@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { login, register, verifyUser } from "../controllers/auth";
+import { login, register, setNewAdminByEmail, verifyUser } from "../controllers/auth";
 import { check } from "express-validator";
 import { isRegisteredEmail } from "../helpers/validations";
 import { recollectErrors } from "../middelwares/recollectErrors";
+import { validateJWT } from "../middelwares/validateJWT";
+import { isVerifiedUser } from "../middelwares/isVerifiedUser";
+import { isAdmin } from "../middelwares/isAdmin";
 
 const router = Router();
 
@@ -34,5 +37,14 @@ router.patch('/verify',[
   recollectErrors,
 
 ], verifyUser);
+
+router.patch('/set-new-admin',[
+  validateJWT,
+  isVerifiedUser,
+  isAdmin,
+  check("email", "El email es obligatorio").not().isEmpty(),
+  check("email", "Ingrese un email válido").isEmail(),     
+  recollectErrors,
+], setNewAdminByEmail); //Recibe el token (de administrador) en el header y el mail del usuario en el body
 
 export default router

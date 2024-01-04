@@ -1,8 +1,11 @@
-import { Response, Request } from "express";
+import e, { Response, Request } from "express";
+import bcryptjs, { hashSync } from "bcryptjs";
+import randomstring from "randomstring";
 
 import User, {IUser} from "../models/user";
 import { isValidEmail } from "../helpers/functions";
-import { log } from "console";
+import { sendMail, sendNewPass } from "../mailer/mailer";
+
 
 export const getUsers = async (req:Request, res:Response) => {
     
@@ -106,7 +109,63 @@ export const updateUserLastName = async (req:Request, res:Response) => {
     }
 };//
 
+export const updateUserEmail = async (req:Request, res:Response) => {
+    
+    const { id, email } = req.body; 
+    const randomCode = randomstring.generate(6);
+    
+    try {
+ 
+        const updatedUser = await User.findByIdAndUpdate( 
+                id, 
+                { 
+                 email: email, 
+                 verificado: false,
+                 codigo: randomCode
+                }, 
+                { new: true }
+            ); 
 
+        return res.status(200).json({
+            msj: `El email se modificó correctamente. Se envió un nuevo código de verificación al correo ${email}`,
+            updatedUser
+        })
+
+    } catch(error){
+    
+        console.error(error);
+        return res.status(500).json({ 
+            msj: "Error interno del servido. No se pudo modificar los datos del usuario"
+        })
+    
+    }
+};//
+
+export const updateUserPass = async (req:Request, res:Response) => {
+    
+    const { id, contraseña } = req.body; 
+
+    const salt = bcryptjs.genSaltSync();
+    const encryptedPass = bcryptjs.hashSync( contraseña, salt );
+    
+    try {
+ 
+        const updatedUser = await User.findByIdAndUpdate( id, { contraseña: encryptedPass }, { new: true } ); 
+
+        return res.status(200).json({
+            msj: `La contraseña se modificó correctamente.`,
+            updatedUser
+        })
+
+    } catch(error){
+    
+        console.error(error);
+        return res.status(500).json({ 
+            msj: "Error interno del servido. No se pudo modificar los datos del usuario"
+        })
+    
+    }
+}//
 
 export const hardDeleteUser = async (req:Request, res:Response) =>{
 
@@ -152,66 +211,118 @@ export const hardDeleteUser = async (req:Request, res:Response) =>{
 
 export const softDeleteUser = async (req:Request, res:Response) => {
     
-    const { email } = req.params; //Desestructuro el email de los parametros de la Request
+    const id = req.body.id
 
     try {
 
+        const user = await User.findByIdAndUpdate( id, { estado: false, verificado: false }, { new: true }); 
+
+        return res.status(200).json({
+            msj: `Se elimino correctamente el usuario registrado con el mail ${req.body.confirmedUser.email}`,
+            user
+        })
 
 
     } catch(error){
     
         console.error(error);
-        return res.status(401).json({ 
-            msj: ""
+        return res.status(500).json({ 
+            msj: "Error interno del servidor. No se pudo eliminar el usuario"
         })
     
     }
 
-    const user = await User.findOneAndUpdate({email: email}, { estado: false }, { new: true }); //EL primer parametro de findOneAndUpdate es la coindidencia que va a buscar y el segundo los campos que va a podificar.
 
-    if (!user) {
-        res.json({
-            msj: "Usuario no encontrado"
-        });
-        return;
-    }
-
-    res.json({
-        user
-    })
-
-};
+};//
 
 export const restoreUser = async (req:Request, res:Response) => {
     
-    const { email } = req.params; 
+    const { email, contraseña } = req.body; 
 
     try {
 
+            const userToRestore = await User.findOne({ email });
+
+                if( !userToRestore ){
+                    return res.status(400).json({
+                        msj: `No se encontró el email ${email} en la base de datos`
+                    })
+                };
+
+            const validatePassword = bcryptjs.compareSync( contraseña, userToRestore.contraseña)   
+        
+            if(!validatePassword) {
+                return res.status(400).json({
+                    msj: "La contraseña es incorrecta"
+                })
+            };
+
+            const randomCode = randomstring.generate(6);
+
+            const user = await User.findOneAndUpdate(
+                {email: email}, 
+                {   
+                    estado: true, 
+                    verificado: false, 
+                    codigo: randomCode 
+                }, 
+                { new: true }); 
+
+            await sendMail( email, randomCode );
+
+            return res.status(200).json({
+                msj: `Usuario reestablecido correctamente. Sen envió el nuevo código de verificación al correo ${email}`,
+                user
+            })
 
 
     } catch(error){
     
         console.error(error);
         return res.status(401).json({ 
-            msj: ""
+            msj: "Error interno del servido. No se pudo reestablecer el usuario"
         })
     
     }
+};//
 
-    const user = await User.findOneAndUpdate({email: email}, { estado: true }, { new: true }); 
+export const restorePassword = async (req:Request, res:Response) =>{
+    const { email } = req.body;
 
-    if (!user) {
-        res.json({
-            msj: "Usuario no encontrado"
-        });
-        return;
+    const user: IUser | null = await User.findOne({ email });
+
+        if(!user) {
+            return res.status(400).json({
+                msj: `No se encontraron usuarios registrados con el el email ${email}`
+            })
+        }
+
+        if ( !user.verificado ) {
+            await sendMail( email, user.codigo as string )
+            return res.status(400).json({
+                msj: `No se puede reestablecer la contraseña. El correo ${email} está registrado pero no fue verificado. Se reenvió el código por email para que pueda conpletar la verificación`
+            })
+        }
+
+    const randomPass = randomstring.generate(8);
+    const salt = bcryptjs.genSaltSync();
+    const encryptedPass = bcryptjs.hashSync( randomPass, salt );
+
+    try {
+        await sendNewPass( email, randomPass as string );
+        const updatedUser = await User.findOneAndUpdate ( { email }, { contraseña: encryptedPass }, { new: true });
+
+        return res.status(400).json({
+            msj: `Se envió la contraseña de recuperación al correo ${email}`
+        })
+
+    } catch(error){
+    
+        console.error(error);
+        return res.status(401).json({ 
+            msj: "Error interno del servido. No se pudo reestablecer la contraseña"
+        })
+    
     }
-
-    res.json({
-        msj: "Se reestableció el usuario",
-        user
-    })
-
-};
+}//
 
