@@ -6,7 +6,8 @@ export interface IIssue {
     descripcion: string,
     prioridad: number,
     usuario: Types.ObjectId,
-    fecha: Date
+    fecha: Date, 
+    resuelta: boolean,
 }
 
 const IssuesSchema = new Schema<IIssue>({
@@ -34,6 +35,11 @@ const IssuesSchema = new Schema<IIssue>({
     fecha: {
         type: Date,
         default: Date.now
+    },
+
+    resuelta: {
+        type: Boolean,
+        default: false
     }
 });
 

@@ -14,6 +14,41 @@ router.post('/', [
     (0, express_validator_1.check)("descripcion", "La descripción es obligatoria").not().isEmpty(),
     (0, express_validator_1.check)("prioridad", "La prioridad es obligatoria").not().isEmpty(),
     recollectErrors_1.recollectErrors
-], issue_1.newIssue);
-exports.default = router;
+], issue_1.newIssue); //requiere token (de admin) en el header
+router.get('/', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.getAllIssues); //requiere token (de admin) en el header
+router.get('/get-pending-issues/', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.getPendingIssues); //requiere token (de admin) en el header
+router.get('/get-resolved-issues/', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.getResolvedIssues); //requiere token (de admin) en el header
+router.get('/get-pending-issues-by-priority/:priority', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.getIssuesByPriority); //requiere token (de admin) en el header
+router.get('/get-issue-by-id/:id', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.getIssueByID); //requiere token (de admin) en el header
+router.patch('/solve-issue-by-id/:id', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.solveIssueByID); //requiere token (de admin) en el header
+router.delete('/hard-delete-issue-by-id/:id', [
+    validateJWT_1.validateJWT,
+    isAdmin_1.isAdmin,
+    recollectErrors_1.recollectErrors
+], issue_1.deleteIssueByID); //requiere token (de admin) en el header
+exports.default = router; //
 //# sourceMappingURL=issues.js.map

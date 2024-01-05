@@ -45,7 +45,7 @@ router.patch('/update-user-data/password', [
     (0, express_validator_1.check)("contraseña", "La contraseña debe tener al menos 8 caracteres").isLength({ min: 8 }),
     recollectErrors_1.recollectErrors
 ], user_1.updateUserPass); //Necesita recibir el token en el header y la info del user en el body
-router.delete('/:email', [
+router.delete('/hard-delete/email/:email', [
     validateJWT_1.validateJWT,
     isAdmin_1.isAdmin,
     recollectErrors_1.recollectErrors

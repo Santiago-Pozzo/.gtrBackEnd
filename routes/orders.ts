@@ -8,7 +8,6 @@ import { isAdmin } from "../middelwares/isAdmin";
 
 const router = Router();
 
-
 router.post('/', [
         validateJWT, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
         isVerifiedUser, 

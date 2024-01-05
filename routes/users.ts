@@ -52,7 +52,7 @@ router.patch('/update-user-data/password', [
     recollectErrors
     ], updateUserPass); //Necesita recibir el token en el header y la info del user en el body
 
-router.delete('/:email', [
+router.delete('/hard-delete/email/:email', [
     validateJWT,
     isAdmin,
     recollectErrors

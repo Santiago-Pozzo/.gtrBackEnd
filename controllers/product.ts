@@ -23,7 +23,6 @@ export const getProducts = async (req:Request, res:Response) => {
     }
 }//
 
-
 export const newProduct = async (req:Request, res:Response) => {
 
     const productData: IProduct = req.body 

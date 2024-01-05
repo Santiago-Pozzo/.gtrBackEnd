@@ -26,6 +26,10 @@ const IssuesSchema = new mongoose_1.Schema({
     fecha: {
         type: Date,
         default: Date.now
+    },
+    resuelta: {
+        type: Boolean,
+        default: false
     }
 });
 const Issue = (0, mongoose_1.model)("Issue", IssuesSchema);
