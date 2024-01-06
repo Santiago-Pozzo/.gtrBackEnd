@@ -7,6 +7,7 @@ import { isVerifiedUser } from "../middelwares/isVerifiedUser";
 import { check } from "express-validator";
 import { isRegisteredEmail } from "../helpers/validations";
 import { setNewUserData } from "../middelwares/updateUser";
+import { isActiveUser } from "../middelwares/isActiveUser";
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.get('/:email', [
 router.patch('/update-user-data/name', [
     validateJWT,
     isVerifiedUser,
+    isActiveUser,
     check("nombre", "El campo nombre es obligatorio").not().isEmpty(),
     recollectErrors
     ], updateUserName); //Necesita recibir el token en el header y la info del user en el body
@@ -32,6 +34,7 @@ router.patch('/update-user-data/name', [
 router.patch('/update-user-data/last-name', [
     validateJWT,
     isVerifiedUser,
+    isActiveUser,
     check("apellido", "El campo apellido es obligatorio").not().isEmpty(),
     recollectErrors
     ], updateUserLastName); //Necesita recibir el token en el header y la info del user en el body
@@ -39,6 +42,7 @@ router.patch('/update-user-data/last-name', [
 router.put('/update-user-data/email/', [
     validateJWT,
     isVerifiedUser,
+    isActiveUser,
     check("email", "El email es obligatorio").not().isEmpty(),
     check("email", "Ingrese un email válido").isEmail(),
     check("email").custom(isRegisteredEmail),
@@ -48,6 +52,7 @@ router.put('/update-user-data/email/', [
 router.patch('/update-user-data/password', [
     validateJWT,
     isVerifiedUser,
+    isActiveUser,
     check("contraseña", "La contraseña debe tener al menos 8 caracteres").isLength({ min: 8 }),
     recollectErrors
     ], updateUserPass); //Necesita recibir el token en el header y la info del user en el body
@@ -61,6 +66,7 @@ router.delete('/hard-delete/email/:email', [
 router.put('/soft-delete', [
     validateJWT,
     isVerifiedUser,
+    isActiveUser,
     recollectErrors
     ],softDeleteUser);//Necesita recibir el token  en el header 
 

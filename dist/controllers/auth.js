@@ -64,8 +64,14 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield user_1.default.findOne({ email });
         if (!user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 msj: `No se encontró el email ${email} en la base de datos`
+            });
+        }
+        ;
+        if (!user.estado) {
+            return res.status(400).json({
+                msj: `No hay un usuario activo con el email ${email}`
             });
         }
         ;
@@ -97,8 +103,14 @@ const verifyUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const user = yield user_1.default.findOne({ email });
         if (!user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 msj: "No se encontró el email en la base de datos"
+            });
+        }
+        ;
+        if (!user.estado) {
+            return res.status(400).json({
+                msj: `No hay un usuario activo con el email ${email}`
             });
         }
         ;

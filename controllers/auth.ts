@@ -67,8 +67,14 @@ export const login = async ( req:Request, res: Response ) => {
         const user = await User.findOne({ email });
 
             if( !user ){
-                return res.status(400).json({
+                return res.status(404).json({
                     msj: `No se encontró el email ${email} en la base de datos`
+                })
+            };
+
+            if (!user.estado) {
+                return res.status(400).json({
+                    msj: `No hay un usuario activo con el email ${email}`
                 })
             };
 
@@ -108,8 +114,14 @@ export const verifyUser = async ( req:Request, res: Response ) => {
         const user = await User.findOne({ email });
 
             if( !user ){
-                return res.status(400).json({
+                return res.status(404).json({
                     msj: "No se encontró el email en la base de datos"
+                })
+            };
+
+            if ( !user.estado ) {
+                return res.status(400).json({
+                    msj: `No hay un usuario activo con el email ${email}`
                 })
             };
 
