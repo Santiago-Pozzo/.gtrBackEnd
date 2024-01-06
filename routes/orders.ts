@@ -5,19 +5,23 @@ import { recollectErrors } from "../middelwares/recollectErrors";
 import { isVerifiedUser } from "../middelwares/isVerifiedUser";
 import { check } from "express-validator";
 import { isAdmin } from "../middelwares/isAdmin";
+import { isActiveUser } from "../middelwares/isActiveUser";
 
 const router = Router();
 
 router.post('/', [
         validateJWT, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
         isVerifiedUser, 
+        isActiveUser,
         check("arrayProductos", "El array de productos es obligatorio").not().isEmpty(),
         check("precioTotalAlComprar", "El precio de compra toal es obligatorio").not().isEmpty(),
         recollectErrors   
         ] ,newOrder);
 
 router.get('/', [
-        validateJWT, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
+        validateJWT,
+        isVerifiedUser, 
+        isActiveUser, //este middelware recibe el token en el header y, si todo es correcto, envía en el body la info del user
         recollectErrors,
         ], getUserOrders);
 

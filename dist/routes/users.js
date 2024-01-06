@@ -13,11 +13,13 @@ const router = (0, express_1.Router)();
 router.get('/', [
     validateJWT_1.validateJWT,
     isAdmin_1.isAdmin,
+    isActiveUser_1.isActiveUser,
     recollectErrors_1.recollectErrors
 ], user_1.getUsers); //Necesita recibir el token en el header de la reuest
 router.get('/:email', [
     validateJWT_1.validateJWT,
     isAdmin_1.isAdmin,
+    isActiveUser_1.isActiveUser,
     recollectErrors_1.recollectErrors
 ], user_1.getUserByEmail); //Recibimos email desde los params 
 router.patch('/update-user-data/name', [
@@ -53,6 +55,7 @@ router.patch('/update-user-data/password', [
 router.delete('/hard-delete/email/:email', [
     validateJWT_1.validateJWT,
     isAdmin_1.isAdmin,
+    isActiveUser_1.isActiveUser,
     recollectErrors_1.recollectErrors
 ], user_1.hardDeleteUser); //Necesita recibir el token en el header
 router.put('/soft-delete', [

@@ -14,12 +14,14 @@ const router = Router();
 router.get('/', [
     validateJWT,
     isAdmin,
+    isActiveUser,
     recollectErrors
     ],getUsers); //Necesita recibir el token en el header de la reuest
 
 router.get('/:email', [
     validateJWT,
     isAdmin,
+    isActiveUser,
     recollectErrors
     ], getUserByEmail); //Recibimos email desde los params 
 
@@ -60,6 +62,7 @@ router.patch('/update-user-data/password', [
 router.delete('/hard-delete/email/:email', [
     validateJWT,
     isAdmin,
+    isActiveUser,
     recollectErrors
     ], hardDeleteUser);//Necesita recibir el token en el header
 
